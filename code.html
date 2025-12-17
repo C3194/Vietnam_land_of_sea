@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ja">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>ベトナムを発見：時を超えた美の交響曲</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;700;900&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+    rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+
+    /* Slider Styles */
+    .slider-container {
+      position: relative;
+      overflow: hidden;
+      border-radius: 0;
+    }
+
+    .slider-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .slide {
+      min-width: 100%;
+      height: 500px;
+      position: relative;
+    }
+
+    .slide img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .slider-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 10px;
+      cursor: pointer;
+      border-radius: 50%;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .slider-prev {
+      left: 20px;
+    }
+
+    .slider-next {
+      right: 20px;
+    }
+
+    .slider-dots {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 10px;
+    }
+
+    .dot {
+      width: 12px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: white;
+    }
+
+    /* Map modal tweaks */
+    #mapModal {
+      z-index: 9999;
+    }
+
+    #mapModal .modal-inner {
+      max-height: 80vh;
+    }
+
+    #map {
+      height: 70vh;
+      min-height: 300px;
+    }
+  </style>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#04ae70",
+            "background-light": "#f5f8f7",
+            "background-dark": "#0f231c",
+          },
+          fontFamily: {
+            "display": ["Be Vietnam Pro", "sans-serif"]
+          },
+          borderRadius: { "DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px" },
+        },
+      },
+    }
+  </script>
+</head>
+
+<body class="bg-background-light dark:bg-background-dark font-display text-[#111815] dark:text-background-light">
+  <div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+    <div class="layout-container flex h-full grow flex-col">
+      <header class="fixed top-0 left-0 right-0 z-50 bg-black/60 backdrop-blur-xl border-b border-white/10">
+        <div class="max-w-[1600px] mx-auto px-6 md:px-12 text-white">
+          <div
+            class="hidden md:flex justify-between text-[10px] tracking-[0.4em] uppercase text-white/60 py-2 border-b border-white/10">
+            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">location_on</span>ベトナム
+              · GMT+7</p>
+            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">cloud</span>26° 晴天</p>
+            <p class="flex items-center gap-2"><span class="material-symbols-outlined text-base">call</span>コンシェルジュ
+              +84 33 202 9410</p>
+          </div>
+          <div class="flex items-center gap-6 py-4" data-aos="fade-down" data-aos-delay="150">
+            <div class="flex items-center gap-3">
+              <div class="size-12 border border-white/30 flex items-center justify-center p-1">
+                <img src="https://upload.wikimedia.org/wikipedia/vi/1/1a/Vietnam_Timeless_Charm.PNG" alt="時を超える魅力のロゴ"
+                  class="w-full h-full object-contain">
+              </div>
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.5em] text-white/60">発見</p>
+                <h1 class="text-xl font-semibold tracking-[0.2em]">ベトナム・アトラス</h1>
+              </div>
+            </div>
+
+            <nav class="hidden lg:flex items-center gap-6 mx-auto text-[11px] uppercase tracking-[0.45em]">
+              <a class="hover:text-primary transition-colors" href="#overview">概要</a>
+              <a class="hover:text-primary transition-colors" href="#culture">文化</a>
+              <a class="hover:text-primary transition-colors" href="#cuisine">料理</a>
+              <a class="hover:text-primary transition-colors" href="#destinations">ルート</a>
+              <a class="hover:text-primary transition-colors" href="#gallery">ギャラリー</a>
+            </nav>
+
+            <div class="ml-auto flex items-center gap-3">
+              <button id="openMapBtn"
+                class="hidden md:flex h-11 min-w-[150px] items-center justify-center gap-2 px-5 border border-white/30 text-[11px] uppercase tracking-[0.3em]">
+                <span class="material-symbols-outlined text-base">map</span>
+                ライブマップ
+              </button>
+              <button id="openBookingBtn"
+                class="h-11 min-w-[150px] px-5 bg-primary text-black font-semibold uppercase tracking-[0.4em] text-[11px] flex items-center justify-center">予約する</button>
+              <button class="lg:hidden size-10 flex items-center justify-center border border-white/30">
+                <span class="material-symbols-outlined">menu</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+      <main>
+        <section class="relative w-full min-h-[90vh] text-white mt-[50px]">
+          <div class="absolute inset-0">
+            <div class="w-full h-full bg-cover bg-center"
+              data-alt="A stunning aerial view of Ha Long Bay in Vietnam, with its iconic limestone karsts and emerald waters at sunset."
+              style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBdLctwAHxlM3BP9C5WwBdx1RNJ5i43JScNVPa2KMJwJWRK7GyqtGvnHhAxjzkReTR6VuYwEs1Mx2c8pnlVSlDDbvPOGsB-w8XWdS_RNnVTaPS6bDkCulI0tUZvC4SsivaU1YUEiVhmAlU5cqgm2sbUq17vD21JxbDz4pP23Wx8nuT70kz7IRsAOltiwUsC2gkCzF0KNIF0qdbDJnQhBST83qpS_v8FefeisG0XDzMMHaRBiir3J4es7pQqFPdT8fEImDFBZi6LEXU");'>
+            </div>
+          </div>
+          <div class="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-black/10"></div>
+          <div class="relative z-10 px-6 md:px-12 lg:px-24 py-32">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+              <div class="lg:col-span-7 space-y-8" data-aos="fade-up">
+                <p class="text-sm uppercase tracking-[0.5em] text-primary/80">Sapa · Hanoi · Hue · Saigon</p>
+                <h1 class="text-4xl md:text-6xl font-black leading-[1.1] tracking-tight">Vietnam: 時を超えた美の交響曲</h1>
+                <p class="text-lg text-white/80 max-w-2xl">
+                  古の伝統、活気に満ちた都市、映画のような海岸線が共存する国を旅してください。職人の村や提灯が灯る通り、デルタの市場があなたの旅の物語を彩ります。</p>
+                <div class="flex flex-wrap gap-6 text-xs md:text-sm uppercase tracking-[0.3em] text-white/70">
+                  <div>
+                    <p class="text-2xl font-bold text-white">54</p>
+                    <p>民族文化</p>
+                  </div>
+                  <div>
+                    <p class="text-2xl font-bold text-white">3,200 km</p>
+                    <p>海岸線</p>
+                  </div>
+                  <div>
+                    <p class="text-2xl font-bold text-white">8</p>
+                    <p>ユネスコ遺産</p>
+                  </div>
+                </div>
+                <div class="flex flex-wrap gap-4">
+                  <button
+                    class="px-6 py-3 bg-primary text-white font-semibold tracking-wide uppercase text-xs rounded-full">旅を計画する</button>
+                  <button
+                    class="px-6 py-3 border border-white/40 text-white font-semibold tracking-wide uppercase text-xs rounded-full backdrop-blur">ストーリーを見る</button>
+                </div>
+              </div>
+              <div class="lg:col-span-5 w-full" data-aos="fade-left" data-aos-delay="150">
+                <div class="bg-white/10 backdrop-blur-xl border border-white/20 p-8 space-y-6">
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="text-sm uppercase tracking-[0.3em] text-white/60">次の出発</p>
+                      <p class="text-2xl font-bold">春分トレイル</p>
+                    </div>
+                    <span class="material-symbols-outlined text-white/70">explore</span>
+                  </div>
+                  <div class="grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p class="text-3xl font-bold">12</p>
+                      <p class="text-xs uppercase tracking-wide text-white/70">日間</p>
+                    </div>
+                    <div>
+                      <p class="text-3xl font-bold">5</p>
+                      <p class="text-xs uppercase tracking-wide text-white/70">都市</p>
+                    </div>
+                    <div>
+                      <p class="text-3xl font-bold">24°</p>
+                      <p class="text-xs uppercase tracking-wide text-white/70">平均気温</p>
+                    </div>
+                  </div>
+                  <div class="space-y-4">
+                    <div class="flex items-start gap-3 border-l border-white/30 pl-4">
+                      <span class="text-primary text-sm mt-1">01</span>
+                      <div>
+                        <p class="font-semibold">ハロン湾 夜明けクルーズ</p>
+                        <p class="text-sm text-white/70">甲板でシェフが用意する朝食を楽しみながら奇岩群を巡ります。</p>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3 border-l border-white/30 pl-4">
+                      <span class="text-primary text-sm mt-1">02</span>
+                      <div>
+                        <p class="font-semibold">フエ 王城の夜間体験</p>
+                        <p class="text-sm text-white/70">王城の劇場でのプライベートリサイタル。</p>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3 border-l border-white/30 pl-4">
+                      <span class="text-primary text-sm mt-1">03</span>
+                      <div>
+                        <p class="font-semibold">メコンデルタ 夜市</p>
+                        <p class="text-sm text-white/70">川に浮かぶ屋台が灯る中、南国の収穫を味わいます。</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between text-sm text-white/70">
+                    <p>現地の旅職人によるキュレーション</p>
+                    <button class="underline underline-offset-4">日程を見る →</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="mt-16 flex items-center gap-2 text-white/70 text-xs uppercase tracking-[0.5em]">
+              <span class="material-symbols-outlined text-base">south</span>
+              スクロールして探索
+            </div>
+          </div>
+        </section>
+
+        <div class="px-6 md:px-12 lg:px-24 w-full max-w-none py-10 min-h-screen">
+
+          <!-- Section: Overview -->
+          <div id="overview" class="py-10" data-aos="fade-up" data-aos-offset="200">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
+              <div class="xl:col-span-4 space-y-6">
+                <p class="text-sm uppercase tracking-[0.3em] text-primary">北部山岳 · 中部遺産 · 南部の鼓動</p>
+                <h2 class="text-4xl font-bold leading-tight tracking-[-0.02em] text-left dark:text-white">探検への招待</h2>
+                <p class="text-base leading-relaxed text-gray-700 dark:text-gray-300">
+                  東南アジアの心を巡る詩的な旅へ。ベトナムは儒教の伝統と現代の創造性が交差し、棚田がデルタへと流れ込み、ひとつひとつの食事が調和の物語を伝えます。</p>
+                <ul class="space-y-3 border-l-4 border-primary pl-4 text-gray-700 dark:text-gray-300">
+                  <li><span class="font-semibold text-primary">54の民族</span> が儀礼、音楽、工芸を育んでいます。</li>
+                  <li><span class="font-semibold text-primary">3つの気候帯</span> が霧深い山々から熱帯の海まで劇的な景観を生み出します。</li>
+                  <li><span class="font-semibold text-primary">何世紀にもわたる歴史</span> が寺院や城郭、フランス風の大通りに残っています。</li>
+                </ul>
+              </div>
+              <div class="xl:col-span-8 space-y-12">
+                <div
+                  class="grid grid-cols-1 md:grid-cols-3 border border-gray-200 dark:border-gray-700 divide-y md:divide-y-0 md:divide-x divide-gray-200 dark:divide-gray-700 bg-white dark:bg-gray-900"
+                  data-aos="fade-up" data-aos-delay="150">
+                  <div class="p-8">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-4 block">temple_buddhist</span>
+                    <h3 class="text-xl font-bold mb-2">豊かな歴史</h3>
+                    <p class="text-gray-600 dark:text-gray-400">東ソンの太鼓から現代アートまで、4000年の文明の足跡。</p>
+                  </div>
+                  <div class="p-8">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-4 block">landscape</span>
+                    <h3 class="text-xl font-bold mb-2">自然の驚異</h3>
+                    <p class="text-gray-600 dark:text-gray-400">カルスト地形の湾、山間の棚田、砂丘、入り組んだデルタ。</p>
+                  </div>
+                  <div class="p-8">
+                    <span class="material-symbols-outlined text-4xl text-primary mb-4 block">restaurant_menu</span>
+                    <h3 class="text-xl font-bold mb-2">世界クラスの料理</h3>
+                    <p class="text-gray-600 dark:text-gray-400">ハーブ、辛味、だしの調和を重んじる料理哲学。</p>
+                  </div>
+                </div>
+
+                <section
+                  class="relative overflow-hidden h-[420px] flex items-center justify-center text-center text-white">
+                  <div class="absolute inset-0 bg-cover bg-center"
+                    style='background-image: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.4)), url("https://lh3.googleusercontent.com/aida-public/AB6AXuBQdrgbL_by5JLHMcd7puAC1dZGj4hIK1d4yUkvTuN1WCDeEjxVsBcEnmRdcnzIVp_GqPGbcB4nn86_YObXb6IbDYADJq2Z5Ohs5a8BwZC7me6voefvAPsZOvG2_trdgRoVFcfVDaEMmZI3l8rufthRpAHv0gcDKKv-GKgybGsLEaffmz0oA-akCiw6rYgsdrOmT23Hsxo347xt20BqNBJ3SjvZYACrHy_5fFKSBjumFoVvypH0gSiHdgBh8YD8d6UGCAKoozBVbg4")'>
+                  </div>
+                  <div class="relative z-10 max-w-3xl px-6">
+                    <h3 class="text-4xl font-bold">歴史のこだま</h3>
+                    <p class="mt-4 text-lg">文廟の儒教的な中庭からフランス・ゴシックの建築まで、歴史の重なりが街並みに息づいています。</p>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Culture -->
+          <div id="culture" class="py-10 border-t border-gray-200 dark:border-gray-800" data-aos="fade-up"
+            data-aos-offset="200">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
+              <div class="xl:col-span-4 space-y-5">
+                <p class="text-sm uppercase tracking-[0.3em] text-primary">文化と遺産</p>
+                <h2 class="text-4xl font-bold leading-tight tracking-[-0.02em] dark:text-white">ベトナムの魂</h2>
+                <p class="text-gray-700 dark:text-gray-300">
+                  ベトナムの文化は人と自然、敬意と革新の調和を祝い、各地方が独自の織物、音階、季節の儀礼を何世紀にもわたり磨き上げてきました。</p>
+                <div class="grid grid-cols-2 gap-4 text-sm text-gray-700 dark:text-gray-300">
+                  <div class="border border-gray-200 dark:border-gray-700 p-4">
+                    <p class="text-2xl font-bold text-primary">1,650+</p>
+                    <p>年間の祭り</p>
+                  </div>
+                  <div class="border border-gray-200 dark:border-gray-700 p-4">
+                    <p class="text-2xl font-bold text-primary">12</p>
+                    <p>ユネスコ文化遺産登録</p>
+                  </div>
+                </div>
+              </div>
+              <div class="xl:col-span-8 space-y-16">
+                <!-- Ao Dai Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center" data-aos="fade-up"
+                  data-aos-delay="100">
+                  <div class="overflow-hidden h-80 border border-gray-200 dark:border-gray-700" data-aos="zoom-in"
+                    data-aos-delay="150">
+                    <img
+                      src="https://duaelbluiumc3.cloudfront.net/Media/Images/InboundImages/Blog/ao-dai-from-royals-to-everyday-life-the-ao-dais-transformation.jpg"
+                      alt="Vietnamese women in Ao Dai"
+                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                  </div>
+                  <div>
+                    <h3 class="text-2xl font-bold text-primary mb-4">アオザイ — 優雅の象徴</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                      アオザイは単なる伝統衣装を超え、ベトナムの美と優雅さを体現します。長いスリット入りのチュニックを絹のズボンに合わせるその形は、特別な場や日常生活の中で誇りを持って着られています。</p>
+                    <p class="text-gray-700 dark:text-gray-300">かつて王室の礼装から発展し、今日でもベトナムのアイデンティティを象徴する普遍的な存在です。</p>
+                  </div>
+                </div>
+
+                <!-- Tet Holiday Section -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center" data-aos="fade-up"
+                  data-aos-delay="150">
+                  <div class="lg:order-2 overflow-hidden h-80 border border-gray-200 dark:border-gray-700"
+                    data-aos="zoom-in" data-aos-delay="200">
+                    <img src="https://vietdreamtravel.vn/wp-content/uploads/2020/04/Tet-Nguyen-Dan-1.jpeg.webp"
+                      alt="Tet Holiday Decorations"
+                      class="w-full h-full object-cover hover:scale-105 transition-transform duration-500">
+                  </div>
+                  <div class="lg:order-1">
+                    <h3 class="text-2xl font-bold text-primary mb-4">テト（旧正月）</h3>
+                    <p class="text-gray-700 dark:text-gray-300 mb-4">
+                      テトはベトナム文化で最も重要な祝祭で、春の到来を告げ、家族が集う神聖な時間です。北では桃の花、南では黄色いアプリコットの花で街が彩られます。</p>
+                    <p class="text-gray-700 dark:text-gray-300">
+                      家族はバインチュン（餅）などの伝統的な料理を準備し、家を清めて厄を払い、子どもや年長者に幸運の贈り物（リッシー）を渡します。</p>
+                  </div>
+                </div>
+
+                <!-- Water Puppetry -->
+                <div class="bg-primary/5 dark:bg-primary/10 p-10 border border-primary/30 dark:border-primary/40"
+                  data-aos="fade-up" data-aos-delay="200">
+                  <h3 class="text-2xl font-bold text-primary mb-6">水上人形劇（Múa Rối Nước）</h3>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="col-span-2">
+                      <p class="text-gray-700 dark:text-gray-300 mb-4">
+                        この独特な芸能は11世紀に紅河デルタの村々で生まれ、腰ほどの深さの水舞台で演じられます。操り手は割れ竹の幕の後ろに立ち、水中に隠された長い竹竿で木製の人形を巧みに動かします。</p>
+                      <p class="text-gray-700 dark:text-gray-300">演目は農村の暮らしや国の歴史、民話を伝統音楽の伴奏とともに語ります。</p>
+                    </div>
+                    <div class="overflow-hidden h-48 border border-gray-200 dark:border-gray-700">
+                      <img src="https://hoangthanhthanglong.vn/en/wp-content/uploads/sites/2/2018/12/mua-roi-nuoc.jpg"
+                        alt="Water Puppetry" class="w-full h-full object-cover">
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Cuisine -->
+          <div id="cuisine" class="py-10 border-t border-gray-200 dark:border-gray-800" data-aos="fade-up"
+            data-aos-offset="200">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-12 items-start">
+              <div class="xl:col-span-4 space-y-5">
+                <p class="text-sm uppercase tracking-[0.3em] text-primary">料理の風景</p>
+                <h2 class="text-4xl font-bold leading-tight tracking-[-0.02em] text-primary">ベトナムの味</h2>
+                <p class="text-gray-700 dark:text-gray-300">
+                  ベトナム料理は五つの基本的な味覚要素が巧みに融合しています。シェフは食感や温度のバランスにも細心の注意を払い、一口ごとに爽やかさと奥行きを感じさせます。</p>
+                <ul class="space-y-3 text-gray-700 dark:text-gray-300">
+                  <li><strong class="text-primary">甘味</strong>: パームシュガー、ココナッツミルク、キャラメリゼした魚醤。</li>
+                  <li><strong class="text-primary">酸味</strong>: タマリンド、スターフルーツ、発酵米。</li>
+                  <li><strong class="text-primary">ハーブの新鮮さ</strong>: バジル、シソ、ベトナムコリアンダー。</li>
+                </ul>
+              </div>
+
+              <div class="xl:col-span-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6"
+                data-aos="fade-up" data-aos-delay="150">
+                <!-- Dish 1 -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <div class="h-48 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <img
+                      src="https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43?q=80&w=1974&auto=format&fit=crop"
+                      alt="Pho"
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">Phở</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">国民食。香り高い牛肉または鶏肉のヌードルスープで、ハーブ、ライム、チリが効いた朝食の定番です。
+                    </p>
+                  </div>
+                </div>
+                <!-- Dish 2 -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <div class="h-48 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <img src="https://banhmihanoi.net/wp-content/uploads/2019/07/maxresdefault.jpg" alt="Banh Mi"
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">Bánh Mì</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                      フランス植民地時代の影響とベトナムの工夫が合わさった一品。パテや肉、漬け野菜、ハーブを詰めた香ばしいバゲットです。</p>
+                  </div>
+                </div>
+                <!-- Dish 3 -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <div class="h-48 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <img src="https://static.vinwonders.com/production/bun-cha-ha-noi-01.jpg" alt="Bun Cha"
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">Bún Chả</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">ハノイ名物。焼いた豚のパティとスライスを、つけダレと春雨、フレッシュなハーブとともに味わいます。
+                    </p>
+                  </div>
+                </div>
+                <!-- Dish 4 -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <div class="h-48 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <img src="https://cdn.tgdd.vn/2020/07/CookProduct/ava-1200x676-7.jpg" alt="Coffee"
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">Cà Phê Sữa Đá</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">練乳入りのベトナム風アイスコーヒー。濃くて甘く、非常にさっぱりとした味わいです。</p>
+                  </div>
+                </div>
+                <!-- Dish 5 -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <div class="h-48 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <img src="https://cdn.tgdd.vn/2020/11/CookRecipe/Avatar/goi-cuon-bo-nuong-yakiniku-thumbnail.jpg"
+                      alt="Spring Rolls"
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">Gỏi Cuốn</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">野菜やエビ、豚肉を包んだフレッシュな生春巻き。ピーナッツ入りのホイシンソースでどうぞ。</p>
+                  </div>
+                </div>
+                <!-- Dish 6 -->
+                <div
+                  class="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 overflow-hidden group">
+                  <div class="h-48 overflow-hidden border-b border-gray-200 dark:border-gray-800">
+                    <img
+                      src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/22/C%C3%A0_ph%C3%AA_tr%E1%BB%A9ng.jpg/1200px-C%C3%A0_ph%C3%AA_tr%E1%BB%A9ng.jpg"
+                      alt="Egg Coffee"
+                      class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                  </div>
+                  <div class="p-6">
+                    <h3 class="text-xl font-bold mb-2">Cà Phê Trứng</h3>
+                    <p class="text-gray-600 dark:text-gray-400 text-sm">
+                      ハノイ名物のエッグコーヒー。濃いロブスタコーヒーの上に、メレンゲのようなクリーミーな卵泡が乗ります。</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Destinations -->
+          <div id="destinations" class="py-10 border-t border-gray-200 dark:border-gray-800" data-aos="fade-up"
+            data-aos-offset="200">
+            <div class="grid grid-cols-1 xl:grid-cols-12 gap-12">
+              <div class="xl:col-span-3 space-y-6">
+                <p class="text-sm uppercase tracking-[0.3em] text-primary">ルートと地域</p>
+                <h2 class="text-4xl font-bold leading-tight tracking-[-0.02em] dark:text-white">目的地の概要
+                </h2>
+                <p class="text-gray-700 dark:text-gray-300">
+                  北から南へ移動すると、気候や方言、交易がその場で変化するのを目の当たりにできます。以下の各地域は旅程の核となるか、組み合わせて大きな周遊プランを作ることができます。</p>
+                <ol class="space-y-3 text-gray-700 dark:text-gray-300 list-decimal list-inside">
+                  <li>北部：カルストの湾、山岳コミュニティ、何千年もの歴史をもつ古都。</li>
+                  <li>中部：王朝の遺産、交易の街、劇的な海岸線。</li>
+                  <li>南部：経済の中心地、浮かぶ市場、肥沃な河川。</li>
+                </ol>
+              </div>
+              <div class="xl:col-span-9 space-y-16">
+                <article
+                  class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 border border-gray-200 dark:border-gray-800 p-8"
+                  data-aos="fade-right">
+                  <div class="lg:col-span-3 space-y-6">
+                    <div>
+                      <p class="text-sm uppercase tracking-[0.4em] text-primary">Northern Arc</p>
+                      <h3 class="mt-2 text-3xl font-bold leading-tight dark:text-white">Where Mountains Kiss the Clouds
+                      </h3>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">
+                      北部高地の厳しい美しさを探検してください。山肌に連なる棚田や多様な民族文化に出会えます。何千年の歴史を持つ首都ハノイは湖や並木道、豊かな芸術遺産に満ちています。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 class="font-bold text-lg dark:text-white">Sapa</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">エメラルド色の棚田をトレッキングし、地元の山岳民族と出会います。</p>
+                      </div>
+                      <div>
+                        <h4 class="font-bold text-lg dark:text-white">Ha Long Bay</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">熱帯雨林に覆われた何千もの石灰岩の島々をクルーズします。</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="lg:col-span-2 overflow-hidden h-96 border border-gray-200 dark:border-gray-700">
+                    <img
+                      alt="Terraced rice fields in Mu Cang Chai, Northern Vietnam, with golden hues during harvest season."
+                      class="w-full h-full object-cover"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwtU3krntOmhEM0EwZ34sGKtDthlP3P_olh8FzmSKYM2XXY7n94n480fvjo5now2iN7eg9aW4lKJgO5udeHPz5IO-kL6reMzp1U9a_yaas4Zgdwg7JCTQEmrAGs4kghR0auWDbOYBaPNlyJorhqN-yPcHbd6BNUf8FbuqthMZ2LZW613l4DIvOQTkfh6vHancpgEKUKLcIG6JPbejW2BGg0gLDXek6TZRuEg_dLUJ-K91EtsBf9zV89phAad33Pnh_MJZZj7-TFvE" />
+                  </div>
+                </article>
+
+                <article
+                  class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 border border-gray-200 dark:border-gray-800 p-8"
+                  data-aos="fade-left" data-aos-delay="100">
+                  <div
+                    class="lg:col-span-2 overflow-hidden h-96 lg:order-first border border-gray-200 dark:border-gray-700">
+                    <img
+                      alt="Colorful lanterns illuminating the ancient town of Hoi An at night, reflecting on the river."
+                      class="w-full h-full object-cover"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtRxZPW3euNBzfFIMDuy1wYx6sSsDgd8T3YlmVhS-A6lc8bL3za2ElZLe1PFOrEX6EMdWa59Vewy_0UNvZXYn84kP-RSBDcw1I7FZqKwkn-e3haFeQJwoi0BvK1KZ7ZfJfSo7Ylk4sNAt8A5nHih3tWCQxudm0pIzPTtukS20oci3lCbOQJRaY-eGzLkO66bx--f8UErJDQ0VXdWeuD0hh7w_I0Du80SpTN1KEDtxSLU_E3G78krZhDJclJDy3hDsRaVBI0B1KYE8" />
+                  </div>
+                  <div class="lg:col-span-3 space-y-6">
+                    <div>
+                      <p class="text-sm uppercase tracking-[0.4em] text-primary">Central Heritage</p>
+                      <h3 class="mt-2 text-3xl font-bold leading-tight dark:text-white">Echoes of Imperial Dynasties
+                      </h3>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">
+                      中部ベトナムでは時を遡る旅が始まります。かつての王朝の揺籃地であるこの地では、フエの王城の詩情、ホイアンの灯る古市街、そして長い歴史を刻む劇的な海岸線を発見できます。</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 class="font-bold text-lg dark:text-white">Hoi An</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">色とりどりの提灯と仕立て屋が並ぶ、よく保存された古い交易港。</p>
+                      </div>
+                      <div>
+                        <h4 class="font-bold text-lg dark:text-white">Hue</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">かつての王都であり、城郭や王墓、仏塔で知られています。</p>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+
+                <article
+                  class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 border border-gray-200 dark:border-gray-800 p-8"
+                  data-aos="fade-right" data-aos-delay="150">
+                  <div class="lg:col-span-3 space-y-6">
+                    <div>
+                      <p class="text-sm uppercase tracking-[0.4em] text-primary">Southern Tapestry</p>
+                      <h3 class="mt-2 text-3xl font-bold leading-tight dark:text-white">A Tapestry of River Life</h3>
+                    </div>
+                    <p class="text-gray-700 dark:text-gray-300">
+                      南部ベトナムの活気ある鼓動に飛び込みましょう。ホーチミン市の都会的なダイナミズムからメコンデルタのうねるような水路まで、南部は商業、文化、豊かな自然生産力が織りなす鮮やかなタペストリーです。
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <h4 class="font-bold text-lg dark:text-white">Ho Chi Minh City</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">国を牽引する商業と文化のエネルギッシュな都市。</p>
+                      </div>
+                      <div>
+                        <h4 class="font-bold text-lg dark:text-white">Mekong Delta</h4>
+                        <p class="text-sm text-gray-600 dark:text-gray-400">無数の河川の上に舟や家、そして市場が浮かぶ水上世界。</p>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="lg:col-span-2 overflow-hidden h-96 border border-gray-200 dark:border-gray-700">
+                    <img
+                      alt="A woman in a traditional conical hat rows a boat through a narrow canal in the Mekong Delta."
+                      class="w-full h-full object-cover"
+                      src="https://lh3.googleusercontent.com/aida-public/AB6AXuAilyHpTJ_JWOAAp6vrGxC3HgUlH0CfHukDdmVD5CnoVMj6j970BzPndRXTozlIkHFNp0W5RjNVmYlHl0r_jpnte6uiosrq4CZhnldHQU8q3W8I5tlIoByy-RePIAxMhfunt8TjECTC3406HgFJMIUhJJ-aAQE3sh5xOOhFdIOvw_kuOstBsvBynQjPvEl_9KSUV_N1Kvp75IwVps72MmEEikejLNUl2Lrcmt6oFzPyPqEmziKm64P9TXXOLQUOyFJFLwN3kSUfknE" />
+                  </div>
+                </article>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section: Gallery (Slider) -->
+          <div id="gallery" class="py-10 border-t border-gray-200 dark:border-gray-800" data-aos="fade-up"
+            data-aos-offset="200">
+            <h2 class="text-3xl font-bold text-center mb-8 dark:text-white">ビジュアルジャーニー</h2>
+            <div class="slider-container border border-gray-200 dark:border-gray-800">
+              <div class="slider-track" id="sliderTrack">
+                <!-- Slide 1 -->
+                <div class="slide">
+                  <img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBdLctwAHxlM3BP9C5WwBdx1RNJ5i43JScNVPa2KMJwJWRK7GyqtGvnHhAxjzkReTR6VuYwEs1Mx2c8pnlVSlDDbvPOGsB-w8XWdS_RNnVTaPS6bDkCulI0tUZvC4SsivaU1YUEiVhmAlU5cqgm2sbUq17vD21JxbDz4pP23Wx8nuT70kz7IRsAOltiwUsC2gkCzF0KNIF0qdbDJnQhBST83qpS_v8FefeisG0XDzMMHaRBiir3J4es7pQqFPdT8fEImDFBZi6LEXU"
+                    alt="Ha Long Bay">
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 text-white">
+                    <h3 class="text-2xl font-bold">ハロン湾</h3>
+                    <p>ユネスコ世界遺産</p>
+                  </div>
+                </div>
+                <!-- Slide 2 -->
+                <div class="slide">
+                  <img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwtU3krntOmhEM0EwZ34sGKtDthlP3P_olh8FzmSKYM2XXY7n94n480fvjo5now2iN7eg9aW4lKJgO5udeHPz5IO-kL6reMzp1U9a_yaas4Zgdwg7JCTQEmrAGs4kghR0auWDbOYBaPNlyJorhqN-yPcHbd6BNUf8FbuqthMZ2LZW613l4DIvOQTkfh6vHancpgEKUKLcIG6JPbejW2BGg0gLDXek6TZRuEg_dLUJ-K91EtsBf9zV89phAad33Pnh_MJZZj7-TFvE"
+                    alt="Mu Cang Chai">
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 text-white">
+                    <h3 class="text-2xl font-bold">ムーカンチャイ</h3>
+                    <p>黄金の棚田</p>
+                  </div>
+                </div>
+                <!-- Slide 3 -->
+                <div class="slide">
+                  <img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAtRxZPW3euNBzfFIMDuy1wYx6sSsDgd8T3YlmVhS-A6lc8bL3za2ElZLe1PFOrEX6EMdWa59Vewy_0UNvZXYn84kP-RSBDcw1I7FZqKwkn-e3haFeQJwoi0BvK1KZ7ZfJfSo7Ylk4sNAt8A5nHih3tWCQxudm0pIzPTtukS20oci3lCbOQJRaY-eGzLkO66bx--f8UErJDQ0VXdWeuD0hh7w_I0Du80SpTN1KEDtxSLU_E3G78krZhDJclJDy3hDsRaVBI0B1KYE8"
+                    alt="Hoi An">
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 text-white">
+                    <h3 class="text-2xl font-bold">ホイアンの古市街</h3>
+                    <p>ランタン祭り</p>
+                  </div>
+                </div>
+                <!-- Slide 4 -->
+                <div class="slide">
+                  <img
+                    src="https://lh3.googleusercontent.com/aida-public/AB6AXuAilyHpTJ_JWOAAp6vrGxC3HgUlH0CfHukDdmVD5CnoVMj6j970BzPndRXTozlIkHFNp0W5RjNVmYlHl0r_jpnte6uiosrq4CZhnldHQU8q3W8I5tlIoByy-RePIAxMhfunt8TjECTC3406HgFJMIUhJJ-aAQE3sh5xOOhFdIOvw_kuOstBsvBynQjPvEl_9KSUV_N1Kvp75IwVps72MmEEikejLNUl2Lrcmt6oFzPyPqEmziKm64P9TXXOLQUOyFJFLwN3kSUfknE"
+                    alt="Mekong Delta">
+                  <div
+                    class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-8 text-white">
+                    <h3 class="text-2xl font-bold">メコンデルタ</h3>
+                    <p>川の暮らし</p>
+                  </div>
+                </div>
+              </div>
+
+              <button class="slider-nav slider-prev" onclick="moveSlide(-1)">
+                <span class="material-symbols-outlined">arrow_back_ios</span>
+              </button>
+              <button class="slider-nav slider-next" onclick="moveSlide(1)">
+                <span class="material-symbols-outlined">arrow_forward_ios</span>
+              </button>
+
+              <div class="slider-dots" id="sliderDots">
+                <!-- Dots will be generated by JS -->
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </main>
+      <footer class="bg-[#0b1a14] text-white border-t border-white/10" data-aos="fade-up" data-aos-offset="200">
+        <div
+          class="max-w-[1600px] mx-auto px-6 md:px-12 lg:px-24 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div class="space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="size-12 border border-white/30 flex items-center justify-center p-1">
+                <img src="https://upload.wikimedia.org/wikipedia/vi/1/1a/Vietnam_Timeless_Charm.PNG" alt="時を超える魅力のロゴ"
+                  class="w-full h-full object-contain">
+              </div>
+              <div>
+                <p class="text-xs uppercase tracking-[0.5em] text-white/60">ナショナルブランド</p>
+                <h3 class="text-lg font-semibold tracking-[0.3em]">時を超える魅力</h3>
+              </div>
+            </div>
+            <p class="text-sm text-white/70">ベトナムへようこそ。霧が立ちこめる山々に息をのませ、提灯の道をたどり、河の市場のリズムを味わってください。どの緯度も新たな旋律です。</p>
+          </div>
+          <div>
+            <h4 class="text-sm uppercase tracking-[0.4em] text-primary mb-4">感じる地域</h4>
+            <ul class="space-y-3 text-sm text-white/70">
+              <li><span class="text-white">北部高地:</span> 霧に包まれた峠、茶畑、民族工芸の村。</li>
+              <li><span class="text-white">中部遺産沿岸:</span> 王朝の城郭、灯る港、チャム遺跡。</li>
+              <li><span class="text-white">南部デルタ:</span> 浮かぶ果樹園、マングローブの保護区、現代的なサイゴン。</li>
+            </ul>
+          </div>
+          <div>
+            <h4 class="text-sm uppercase tracking-[0.4em] text-primary mb-4">旅行の基本情報</h4>
+            <ul class="space-y-3 text-sm text-white/70">
+              <li>おすすめシーズン: 北部は10月〜4月、南部は12月〜5月。</li>
+              <li>ビザ情報: 90以上の国籍でeビザが利用可能。</li>
+              <li>交通: 高速鉄道と国内線が主要都市を結びます。</li>
+              <li>責任ある旅行: コミュニティのホームステイを支援し、プラスチック使用を減らしましょう。</li>
+            </ul>
+          </div>
+          <div class="space-y-3 text-sm text-white/70">
+            <h4 class="text-sm uppercase tracking-[0.4em] text-primary mb-4">ベトナムとつながる</h4>
+            <p>ベトナム国立観光局<br />80 Quán Sứ, Hoàn Kiếm, Hà Nội</p>
+            <p>コンシェルジュ: +84 33 202 9410</p>
+            <p>メール: hello@vietnam.travel</p>
+            <p class="text-white">#VietnamTimelessCharm</p>
+          </div>
+        </div>
+        <div class="border-t border-white/10 text-center text-xs uppercase tracking-[0.3em] text-white/60 py-4">
+          © 2025 時を超える魅力 · 探検者のために心を込めて制作
+        </div>
+      </footer>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    AOS.init({
+      once: true,
+      duration: 800,
+      easing: 'ease-out-cubic',
+      offset: 120,
+    });
+
+    // Slider Functionality
+    let currentSlide = 0;
+    const track = document.getElementById('sliderTrack');
+    const slides = document.getElementsByClassName('slide');
+    const dotsContainer = document.getElementById('sliderDots');
+
+    // Create dots
+    for (let i = 0; i < slides.length; i++) {
+      const dot = document.createElement('div');
+      dot.classList.add('dot');
+      if (i === 0) dot.classList.add('active');
+      dot.onclick = () => goToSlide(i);
+      dotsContainer.appendChild(dot);
+    }
+
+    function updateSlider() {
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+      // Update dots
+      const dots = document.getElementsByClassName('dot');
+      for (let i = 0; i < dots.length; i++) {
+        dots[i].classList.remove('active');
+      }
+      dots[currentSlide].classList.add('active');
+    }
+
+    function moveSlide(n) {
+      currentSlide += n;
+      if (currentSlide >= slides.length) currentSlide = 0;
+      if (currentSlide < 0) currentSlide = slides.length - 1;
+      updateSlider();
+    }
+
+    function goToSlide(n) {
+      currentSlide = n;
+      updateSlider();
+    }
+
+    // Auto slide
+    setInterval(() => {
+      moveSlide(1);
+    }, 5000);
+
+    // Live Map modal + Leaflet initialization
+    let liveMap = null;
+    let liveMapInitialized = false;
+    const openMapBtn = document.getElementById('openMapBtn');
+    // create modal markup dynamically if not present
+    if (!document.getElementById('mapModal')) {
+      const modal = document.createElement('div');
+      modal.id = 'mapModal';
+      modal.className = 'fixed inset-0 hidden items-center justify-center bg-black/60';
+      modal.innerHTML = `
+            <div class="bg-white dark:bg-gray-900 rounded-lg w-[90%] md:w-3/4 lg:w-2/3 modal-inner overflow-hidden">
+              <div class="flex items-center justify-between p-4 border-b">
+                <h3 class="font-semibold">ライブマップ</h3>
+                <button id="closeMapBtn" class="text-2xl">&times;</button>
+              </div>
+              <div id="map"></div>
+            </div>`;
+      document.body.appendChild(modal);
+    }
+
+    const mapModal = document.getElementById('mapModal');
+    const closeMapBtn = document.getElementById('closeMapBtn');
+
+    // Booking modal + client-side handling
+    const openBookingBtn = document.getElementById('openBookingBtn');
+    if (!document.getElementById('bookingModal')) {
+      const bmodal = document.createElement('div');
+      bmodal.id = 'bookingModal';
+      bmodal.className = 'fixed inset-0 hidden items-center justify-center bg-black/60 z-50';
+      bmodal.innerHTML = `
+            <div class="bg-white dark:bg-gray-900 rounded-lg w-[90%] md:w-2/3 lg:w-1/2 modal-inner overflow-hidden p-6">
+              <div class="flex items-center justify-between border-b pb-2 mb-4">
+                <h3 class="font-semibold">予約</h3>
+                <button id="closeBookingBtn" class="text-2xl">&times;</button>
+              </div>
+              <form id="bookingForm" class="space-y-4">
+                <div>
+                  <label class="block text-sm mb-1">お名前 <span class="text-primary">*</span></label>
+                  <input name="name" class="w-full border p-2 rounded" required />
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm mb-1">メール <span class="text-primary">*</span></label>
+                    <input type="email" name="email" class="w-full border p-2 rounded" required />
+                  </div>
+                  <div>
+                    <label class="block text-sm mb-1">電話番号</label>
+                    <input name="phone" class="w-full border p-2 rounded" />
+                  </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm mb-1">出発日 <span class="text-primary">*</span></label>
+                    <input type="date" name="date" class="w-full border p-2 rounded" required />
+                  </div>
+                  <div>
+                    <label class="block text-sm mb-1">人数</label>
+                    <input type="number" name="guests" min="1" value="2" class="w-full border p-2 rounded" />
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm mb-1">リクエスト / メモ</label>
+                  <textarea name="notes" rows="3" class="w-full border p-2 rounded"></textarea>
+                </div>
+                <div class="flex gap-3 justify-end">
+                  <button type="button" id="cancelBookingBtn" class="px-4 py-2 border rounded">キャンセル</button>
+                  <button type="submit" class="px-4 py-2 bg-primary text-black font-semibold rounded">送信</button>
+                </div>
+              </form>
+              <div id="bookingSuccess" class="hidden p-4 text-center">
+                <p class="font-semibold text-lg">予約リクエストが送信されました</p>
+                <p class="mt-2">ありがとうございます。担当者から追ってご連絡いたします。</p>
+                <div class="mt-4">
+                  <button id="closeBookingSuccess" class="px-4 py-2 bg-primary text-black rounded">閉じる</button>
+                </div>
+              </div>
+            </div>`;
+      document.body.appendChild(bmodal);
+    }
+
+    const bookingModal = document.getElementById('bookingModal');
+    const closeBookingBtn = document.getElementById('closeBookingBtn');
+    const bookingForm = document.getElementById('bookingForm');
+    const bookingSuccess = document.getElementById('bookingSuccess');
+    const cancelBookingBtn = document.getElementById('cancelBookingBtn');
+    const closeBookingSuccess = document.getElementById('closeBookingSuccess');
+
+    function openBooking() {
+      if (bookingModal) bookingModal.classList.remove('hidden');
+    }
+
+    function closeBooking() {
+      if (bookingModal) bookingModal.classList.add('hidden');
+      if (bookingSuccess) bookingSuccess.classList.add('hidden');
+      if (bookingForm) { bookingForm.classList.remove('hidden'); bookingForm.reset(); }
+    }
+
+    if (openBookingBtn) openBookingBtn.addEventListener('click', openBooking);
+    if (closeBookingBtn) closeBookingBtn.addEventListener('click', closeBooking);
+    if (cancelBookingBtn) cancelBookingBtn.addEventListener('click', closeBooking);
+    if (closeBookingSuccess) closeBookingSuccess.addEventListener('click', closeBooking);
+
+    if (bookingForm) {
+      bookingForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+        const name = bookingForm.querySelector('[name="name"]').value.trim();
+        const email = bookingForm.querySelector('[name="email"]').value.trim();
+        const date = bookingForm.querySelector('[name="date"]').value;
+        if (!name || !email || !date) {
+          alert('必須項目を入力してください（氏名、メール、出発日）');
+          return;
+        }
+        // Simulate submission
+        bookingForm.classList.add('hidden');
+        if (bookingSuccess) bookingSuccess.classList.remove('hidden');
+      });
+    }
+
+    function openMap() {
+      mapModal.classList.remove('hidden');
+      setTimeout(() => {
+        if (!liveMapInitialized) {
+          liveMapInitialized = true;
+          liveMap = L.map('map', { scrollWheelZoom: false }).setView([16.0, 108.0], 5);
+          L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: '© OpenStreetMap contributors'
+          }).addTo(liveMap);
+
+          const points = [
+            { coords: [21.0285, 105.8542], label: 'ハノイ' },
+            { coords: [10.8231, 106.6297], label: 'ホーチミン市' },
+            { coords: [20.9101, 107.1839], label: 'ハロン湾' },
+            { coords: [15.8801, 108.3380], label: 'ホイアン' },
+            { coords: [22.3375, 103.8440], label: 'サパ' },
+            { coords: [10.0452, 105.7469], label: 'カントー（メコンデルタ）' }
+          ];
+
+          const markers = points.map(p => L.marker(p.coords).addTo(liveMap).bindPopup(p.label));
+          const group = L.featureGroup(markers);
+          if (markers.length) liveMap.fitBounds(group.getBounds().pad(0.2));
+        } else {
+          setTimeout(() => { liveMap.invalidateSize(); }, 200);
+        }
+      }, 200);
+    }
+
+    function closeMap() {
+      mapModal.classList.add('hidden');
+    }
+
+    if (openMapBtn) openMapBtn.addEventListener('click', openMap);
+    if (closeMapBtn) closeMapBtn.addEventListener('click', closeMap);
+    if (mapModal) mapModal.addEventListener('click', (e) => { if (e.target === mapModal) closeMap(); });
+
+  </script>
+
+  <!-- Chatbot Widget -->
+  <div id="chatbot-toggle"
+    class="fixed bottom-6 right-6 z-40 w-14 h-14 bg-primary text-black rounded-full flex items-center justify-center cursor-pointer shadow-lg hover:shadow-xl transition-shadow">
+    <span class="material-symbols-outlined text-2xl">smart_toy</span>
+  </div>
+
+  <div id="chatbot-window"
+    class="hidden fixed bottom-24 right-6 z-40 w-80 h-96 bg-white dark:bg-gray-900 rounded-lg shadow-2xl flex flex-col border border-gray-200 dark:border-gray-700">
+    <!-- Chatbot Header -->
+    <div class="bg-primary text-black p-4 rounded-t-lg flex justify-between items-center">
+      <div>
+        <h3 class="font-bold">ベトナムガイド</h3>
+        <p class="text-xs opacity-90">24時間対応</p>
+      </div>
+      <button id="chatbot-close" class="hover:bg-black/20 p-1 rounded">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+
+    <!-- Chatbot Messages -->
+    <div id="chatbot-messages" class="flex-1 overflow-y-auto p-4 space-y-4">
+      <div class="mb-4">
+        <div class="inline-block bg-gray-100 dark:bg-gray-800 text-black dark:text-white px-4 py-2 rounded-lg text-sm">
+          こんにちは！ベトナムの旅について何かお手伝いできることはありますか？
+        </div>
+      </div>
+    </div>
+
+    <!-- Chatbot Input -->
+    <div class="border-t border-gray-200 dark:border-gray-700 p-3 flex gap-2">
+      <input id="chatbot-input" type="text" placeholder="質問を入力..."
+        class="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800 text-black dark:text-white outline-none focus:ring-2 focus:ring-primary" />
+      <button id="chatbot-send" class="bg-primary text-black px-3 py-2 rounded hover:bg-primary/90 transition-colors">
+        <span class="material-symbols-outlined">send</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Chatbot functionality
+    const chatbotToggle = document.getElementById('chatbot-toggle');
+    const chatbotWindow = document.getElementById('chatbot-window');
+    const chatbotClose = document.getElementById('chatbot-close');
+    const chatbotInput = document.getElementById('chatbot-input');
+    const chatbotMessages = document.getElementById('chatbot-messages');
+    const chatbotSend = document.getElementById('chatbot-send');
+
+    // Toggle chatbot window
+    chatbotToggle.addEventListener('click', () => {
+      chatbotWindow.classList.toggle('hidden');
+    });
+
+    // Close chatbot
+    chatbotClose.addEventListener('click', () => {
+      chatbotWindow.classList.add('hidden');
+    });
+
+    // Sample responses for Vietnam-related queries
+    const botResponses = {
+      'こんにちは|hello|hi|hey': 'こんにちは！ベトナムへの旅をお手伝いします。ハロン湾、ホイアン、メコンデルタについてご質問はありますか？',
+      'ハロン湾|halong|ha long': 'ハロン湾は、1500以上の石灰岩の奇岩が特徴的なユネスコ世界遺産です。早朝クルーズで伝統的なジャンク船に乗ることをお勧めします。',
+      'ホイアン|hoi an|ancient town': 'ホイアンは15世紀の古い町で、黄色い建物と提灯が特徴的です。夜間にはランタン祭りが開かれ、非常にロマンチックです。',
+      'メコンデルタ|mekong|delta': 'メコンデルタは「東洋のベニス」として知られています。浮かぶ市場、果樹園、地元の村を訪れる体験は忘れられません。',
+      'ホーチミン|saigon|ho chi minh': 'ホーチミンはベトナムの最大都市で、フレンチコロニアル建築、活気のある通り、素晴らしい料理が特徴です。',
+      'ハノイ|hanoi': 'ハノイはベトナムの首都で、1000年の歴史を持つ古い町です。還剣湖、旧市街、有名なナイトライフで知られています。',
+      '予約|booking|reserve|予約する': '予約はページ上の「予約する」ボタンをクリックして、カスタマイズされたツアーを選択できます。',
+      'いくら|price|cost|料金|金額': 'ツアーの価格はツアーの長さと目的地によって異なります。12日間の春分トレイルは詳細は「日程を見る」でご確認ください。',
+      'いつ|when|month|月|時期|ベスト': 'ベトナムのベストシーズンは10月から4月です。この期間は気温が温かく、降雨が少なくなります。',
+      '食べ物|料理|食事|フード': 'ベトナム料理は世界で最も美味しい料理の一つです。フォー、バオミー、春巻きをお試しください。メコンツアーでは地元の屋台料理を楽しめます。'
+    };
+
+    // Function to get bot response
+    function getBotResponse(userMessage) {
+      const lowerMessage = userMessage.toLowerCase();
+      for (const [keywords, response] of Object.entries(botResponses)) {
+        const keywordList = keywords.split('|');
+        if (keywordList.some(keyword => lowerMessage.includes(keyword))) {
+          return response;
+        }
+      }
+      return 'ご質問ありがとうございます。ハロン湾、ホイアン、メコンデルタ、ハノイ、ホーチミンについてお聞きするか、予約、価格、ベストシーズンについてお尋ねください。';
+    }
+
+    // Send message function
+    function sendMessage() {
+      const message = chatbotInput.value.trim();
+      if (message === '') return;
+
+      // Add user message to chat
+      const userMessageDiv = document.createElement('div');
+      userMessageDiv.className = 'mb-4 text-right';
+      userMessageDiv.innerHTML = `<div class="inline-block bg-primary text-black px-4 py-2 rounded-lg max-w-xs">${message}</div>`;
+      chatbotMessages.appendChild(userMessageDiv);
+
+      // Clear input
+      chatbotInput.value = '';
+
+      // Simulate bot response delay
+      setTimeout(() => {
+        const botResponse = getBotResponse(message);
+        const botMessageDiv = document.createElement('div');
+        botMessageDiv.className = 'mb-4 text-left';
+        botMessageDiv.innerHTML = `<div class="inline-block bg-white dark:bg-gray-800 text-black dark:text-white px-4 py-2 rounded-lg max-w-xs">${botResponse}</div>`;
+        chatbotMessages.appendChild(botMessageDiv);
+
+        // Scroll to bottom
+        chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+      }, 300);
+
+      // Scroll to bottom
+      chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+    }
+
+    // Send message on button click
+    chatbotSend.addEventListener('click', sendMessage);
+
+    // Send message on Enter key
+    chatbotInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+  </script>
+
+</body>
+
+</html>
